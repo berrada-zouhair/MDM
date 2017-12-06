@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>MDM</title>
+
+<link rel="stylesheet" type="text/css" href="css/global.css" />
+<link rel="stylesheet" type="text/css" href="jquery.dataTables.min.css" />
+<link rel="stylesheet" type="text/css" href="switchCss.css" />
+<script type="text/javascript" src="jquery-1.12.4.js"></script>
+<script type="text/javascript" src="jquery.dataTables.min.js"></script>
+
+<link rel="stylesheet" href="/resources/demos/style.css">
+<!--   <script src="https://code.jquery.com/jquery-1.12.4.js"></script> -->
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+
+
+</head>
+<body>
+	<script>
+	var opt = {
+	        autoOpen: true,
+	        modal: true,
+	        width: 400,
+	        height:400,
+	        title : "Localisation"
+	};
+
+	var init = false;
+	var dataSet;
+$(document).ready(function() {
+    $.ajax({
+        url: "http://localhost:8080/getAllDevices"
+    }).then(function(data) {
+    		
+    			
+    			$.ajax({
+    		        url: "http://localhost:8080/getApks",
+    		        success: function(result){
+	    	   	        for (var i = 0; i < result.length; i++) {
+	    	   	        		var r1= $('<div>').attr({
+	    	   	        	        id: "apks" + result[i]
+	    	   	        	    });
+	    	   	        		var r= $('<input/>').attr({
+	    	   	        	        type: "button",
+	    	   	        	        id: result[i],
+	    	   	        	        value: result[i],
+	    	   	        	        style : "width: 20em;"
+	    	   	        	    });
+	    	   	        		var r2= $('</div>');
+	    	   	        		$("#apks").append(r1); // <li>
+	    	   	        		var x = "#apks" + result[i];
+	    	   	        	    $(x).append(r); //</input>
+	    	   	        		$("#apks").append(r2); //</li>
+	    	   	        		var s = result[i];
+// 	    	   	        		alert("IIIIII : " + i)
+	    	   	        	 $('#'+result[i]).click( function (i) {
+// 	    	   	        		 alert(String(Number(i)));
+	    	   	        		$.ajax({
+		    	 	   	    		type : "GET",
+	    	   	    		        url: "http://localhost:8080/sendApk?apkPath="+s,
+		    		   	    		success: function(result){
+	    		   	    				$("#apks").dialog().dialog("close");
+	    			   	     	},
+	    			   	    		error : function(XMLHttpRequest, textStatus, errorThrown) { 
+	    			   	    	        alert("Status: " + textStatus); alert("Error: " + errorThrown);
+	    			   	    	     $("#apks").dialog().dialog("close");
+	    				   	    }
+	    	   	    		    });
+	    	   	        	});
+	    	   	        		
+	    	   	        		
+	    	   	      	}
+    	   	     	}
+    		    });
+    			
+    	
+   		dataSet = data;
+   		$('#example').DataTable( {
+   	        data: dataSet,
+   	        columns: [
+   	        	{ title: "Imei" },
+   	        { title: "IP" },
+   	        { title: "Latitude" },
+   	        { title: "Longitude" },
+   	        { title: "Register Token" },
+   	        { title: "Connected" },
+   	     	{ title: "Last connection" }
+   	        ]
+   	    } );
+   		
+   		var table = $('#example').DataTable();
+   	 
+   	    $('#example tbody').on( 'click', 'tr', function () {
+   	        if ( $(this).hasClass('selected') ) {
+   	            $(this).removeClass('selected');
+   	        }
+   	        else {
+   	            table.$('tr.selected').removeClass('selected');
+   	        }
+   	    } );
+   	    
+   	 $('#example tbody').on( 'dblclick', 'tr', function () {
+	            $(this).addClass('selected');
+// 	            alert(table.row(this).data());
+	            var latitude = table.row(this).data()[2];
+	         	var longitude = table.row(this).data()[3];
+// 	         	alert(latitude);
+// 	         	alert(longitude);
+   		if (!init) {
+   	     map = new google.maps.Map(document.getElementById('map'), {
+             center: {lat: Number(latitude), lng: Number(longitude)},
+             zoom: 8
+           });
+   	     init = true;
+   		}
+   		else {
+   			lats = 54.914740;
+   		    longs = -1.388371;
+   		    map.setCenter(new google.maps.LatLng(latitude,longitude));
+   		}
+   		$("#map").dialog(opt).dialog("open");
+	    } );
+   	    
+   	 
+   	    $('#button').click( function () {
+   	    	var x = {message : "monMessage", reveiverRegisterToken : "abc"};
+	   	    	$.ajax({
+	   	    		url: "http://localhost:8080/sendMessageToAllDevices",
+// 	   	    		data : "{\"message\" : \"" + $('#messageText').val() + "\"}",
+	   	    		data : "{\"message\" : \"" + $('#messageText').val() + "\",\"blockDevice\":\"" + $('#blockDevice').is(":checked") + "\"}",
+	   	    		type : "POST",
+	   	    		contentType: 'application/json',
+	   	    		dataType: "text",
+	   	    		success: function(result){
+	   	         	alert(result);
+	   	     	},
+	   	    		error : function(XMLHttpRequest, textStatus, errorThrown) { 
+	   	    	        alert("Status: " + textStatus); alert("Error: " + errorThrown); 
+		   	    }
+	   	    	});
+   	    } );
+   	    
+   	 $('#destroy').click( function () {
+	   	    	$.ajax({
+	   	    		url: "http://localhost:8080/destroyAllDevices",
+	   	    		type : "GET",
+	   	    		success: function(result){
+	   	     	},
+	   	    		error : function(XMLHttpRequest, textStatus, errorThrown) { 
+	   	    	        alert("Status: " + textStatus); alert("Error: " + errorThrown); 
+		   	    }
+	   	    	});
+	    } );
+   	    
+   	 $('#reboot').click( function () {
+	    	var x = {message : "monMessage", reveiverRegisterToken : "abc"};
+	   	    	$.ajax({
+	   	    		url: "http://localhost:8080/rebootAllDevices",
+// 	   	    		data : "{\"message\" : \"" + $('#messageText').val() + "\"}",
+//	   	    		data : "{\"message\" : \"" + $('#messageText').val() + "\",\"reveiverRegisterToken\":\"4ee152b49771166d7cbb3c\"}",
+// 	   	    		type : "GET",
+// 	   	    		contentType: 'application/json',
+// 	   	    		dataType: "text",
+	   	    		success: function(result){
+	   	     	},
+	   	    		error : function(XMLHttpRequest, textStatus, errorThrown) { 
+	   	    	        alert("Status: " + textStatus); alert("Error: " + errorThrown); 
+		   	    }
+	   	    	});
+	    } );
+   	 
+   	$('#wifi').click( function () {
+   	    	$.ajax({
+   	    		url: "http://localhost:8080/changeServiceState",
+   	    		data : "{\"serviceName\" : \"" + "WIFI" + "\", \"checked\":\"" + $('#wifi').is(":checked")  + "\"}",
+// 			data : "WIFI",
+   	    		type : "POST",
+   	    		contentType: 'application/json',
+   	    		dataType: "text",
+   	    		success: function(result){
+   	     	},
+   	    		error : function(XMLHttpRequest, textStatus, errorThrown) { 
+   	    	        alert("Status: " + textStatus); alert("Error: " + errorThrown); 
+	   	    }
+   	    	});
+    } );
+   	
+   	$('#adb').click( function () {
+	    	$.ajax({
+	    		url: "http://localhost:8080/changeServiceState",
+	    		data : "{\"serviceName\" : \"" + "ADB" + "\", \"checked\":\"" + $('#adb').is(":checked")  + "\"}",
+	    		type : "POST",
+	    		contentType: 'application/json',
+	    		dataType: "text",
+	    		success: function(result){
+	     	},
+	    		error : function(XMLHttpRequest, textStatus, errorThrown) { 
+	    	        alert("Status: " + textStatus); alert("Error: " + errorThrown); 
+   	    }
+	    	});
+	} );
+   	
+   	$('#dot').click( function () {
+	    	$.ajax({
+	    		url: "http://localhost:8080/changeServiceState",
+	    		data : "{\"serviceName\" : \"" + "DATA" + "\", \"checked\":\"" + $('#dot').is(":checked")  + "\"}",
+	    		type : "POST",
+	    		contentType: 'application/json',
+	    		dataType: "text",
+	    		success: function(result){
+	     	},
+	    		error : function(XMLHttpRequest, textStatus, errorThrown) { 
+	    	        alert("Status: " + textStatus); alert("Error: " + errorThrown); 
+   	    }
+	    	});
+	} );
+   	
+   	$('#bluetooth').click( function () {
+	    	$.ajax({
+	    		url: "http://localhost:8080/changeServiceState",
+	    		data : "{\"serviceName\" : \"" + "BLUETOOTH" + "\", \"checked\":\"" + $('#bluetooth').is(":checked")  + "\"}",
+	    		type : "POST",
+	    		contentType: 'application/json',
+	    		dataType: "text",
+	    		success: function(result){
+	     	},
+	    		error : function(XMLHttpRequest, textStatus, errorThrown) { 
+	    	        alert("Status: " + textStatus); alert("Error: " + errorThrown); 
+   	    }
+	    	});
+	} );
+   	
+   	$('#mtp').click( function () {
+	    	$.ajax({
+	    		url: "http://localhost:8080/changeServiceState",
+	    		data : "{\"serviceName\" : \"" + "MTP" + "\", \"checked\":\"" + $('#mtp').is(":checked")  + "\"}",
+	    		type : "POST",
+	    		contentType: 'application/json',
+	    		dataType: "text",
+	    		success: function(result){
+	     	},
+	    		error : function(XMLHttpRequest, textStatus, errorThrown) { 
+	    	        alert("Status: " + textStatus); alert("Error: " + errorThrown); 
+   	    }
+	    	});
+	} );
+   	
+   	$('#unknownSource').click( function () {
+	    	$.ajax({
+	    		url: "http://localhost:8080/changeServiceState",
+	    		data : "{\"serviceName\" : \"" + "UNKNOWN SOURCE" + "\", \"checked\":\"" + $('#unknownSource').is(":checked")  + "\"}",
+	    		type : "POST",
+	    		contentType: 'application/json',
+	    		dataType: "text",
+	    		success: function(result){
+	     	},
+	    		error : function(XMLHttpRequest, textStatus, errorThrown) { 
+	    	        alert("Status: " + textStatus); alert("Error: " + errorThrown); 
+   	    }
+	    	});
+	} );
+   	
+   	
+   
+   	
+   	$('#apk').click( function () {
+   		$("#apks").dialog().dialog("open");
+} );
+   	
+   	$("#file").on('change', function (){
+   		var url = 'http://localhost:8080/uploadFile';
+   	    var xhr = new XMLHttpRequest();
+   	    var fd = new FormData();
+   	    xhr.open("POST", url, true);
+//    	 	xhr.setRequestHeader("Content-Type", "multipart/form-data");
+		xhr.setRequestHeader("content-type",
+                  "multipart/form-data; boundary=boundary");
+   	    xhr.onreadystatechange = function() {
+   	        if (xhr.readyState == 4 && xhr.status == 200) {
+   	            // Every thing ok, file uploaded
+   	            console.log(xhr.responseText); // handle response.
+   	            alert("FILE UPLOAD OK");
+   	        }
+   	    };
+   	    fd.append("file", this.files[0]);
+   		
+   		var oMyForm = new FormData();
+        oMyForm.append("file", this.files[0]);
+       $.ajax({
+    	   		dataType : 'json',
+            url : "http://localhost:8080/uploadFile",
+            data : oMyForm,
+            type : "POST",
+            enctype: 'multipart/form-data',
+            processData: false, 
+            contentType:false,
+            success : function(result) {
+                alert("SUCCESS");
+            },
+            error : function(result){
+                //...;
+            }
+          });
+   		
+   		
+   		
+   		
+   		
+    });
+
+
+    });
+    
+    
+});
+
+
+	</script>
+	<table id="example" class="display" width="100%"></table>
+
+
+	<div id="map" style="display: none"></div>
+	<div id="apks" style="display: none"></div>
+
+	<script
+		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAkLw1SlcfswVozj30s8nLN8JpBiazARds"
+		async defer></script>
+
+	<div class="flexbox">
+
+		<fieldset>
+				<legend>Services</legend>
+				<table>
+					<tr>
+						<td></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td></td>
+					</tr>
+				</table>
+				<div>
+					<label>Message text :</label> <input id="messageText" type="text"
+						placeholder="type message to send">
+				</div>
+				<label>Block device :</label> <input type="checkbox"
+					id="blockDevice">
+				<div></div>
+				<input id="button" class="ui-button ui-widget ui-corner-all"
+					type="button" value="Envoyer message">
+					
+					
+		<div id="controls">
+			<input id="apk" type="button" value="Send Apk">
+			<input id="reboot" class="ui-button ui-widget ui-corner-all" type="button" value="Reboot">
+			<input id="destroy" class="ui-button ui-widget ui-corner-all" type="button" value="Destroy">
+			<input  type="file" name="Send file" id="file" > 
+		</div>
+			</fieldset>
+
+		<fieldset>
+			<legend>Connectivity</legend>
+			
+			<table id="service-table">
+				<tr>
+					<td>WIFI</td>
+					<td><label class="switch"> <input id="wifi"
+							type="checkbox" checked> <span class="slider round"></span>
+					</label> </td>
+					<td>BLUETOOTH</td>
+					<td><label class="switch"> <input id="bluetooth"
+							type="checkbox"> <span class="slider round"></span>
+					</label> </td>
+				</tr>
+				<tr>
+					<td>DATA</td>
+					<td><label class="switch"> <input id="dot"
+							type="checkbox"> <span class="slider round"></span>
+					</label> </td>
+					<td>ADB</td>
+					<td><label class="switch"> <input id="adb"
+							type="checkbox"> <span class="slider round"></span>
+					</label> </td>
+				</tr>
+				<tr>
+
+					<td>UNKNOWN SOURCE</td>
+					<td><label class="switch"> <input id="unknownSource"
+							type="checkbox"> <span class="slider round"></span>
+					</label> </td>
+				</tr>
+			</table>			
+			
+		</fieldset>
+
+		<div class="clear"></div>
+
+
+		<!--<form method="" action="" > form-x-upload 
+			<input type="file" name="fileupload" />
+		</form>-->
+		
+
+
+	</div>
+</body>
+</html>

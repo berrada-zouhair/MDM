@@ -1,0 +1,49 @@
+#map {
+	height: 100%;
+}
+
+html, body {
+	height: 100%;
+	margin: 0;
+	padding: 1rem;
+	font-size: 14px;
+	font-family: Arial;
+}
+
+.clear {
+	clear: both;
+}
+
+.flexbox {
+	display: flex;
+	flex-direction: row;
+}
+
+fieldset {
+	position: relative;
+	width: 47%;
+	min-height: 150px;
+	float: left;
+}
+
+#controls {
+	padding: 5px;
+	position: absolute;
+	bottom: 0;
+	text-align: right;
+}
+
+#service-table td {
+	min-width: 100px;
+	vertical-align: middle;
+}
+
+.popup {
+	display: none;
+	min-height: 100px;
+	border-color: red;
+	overflow: scroll; 
+		
+}
+
+

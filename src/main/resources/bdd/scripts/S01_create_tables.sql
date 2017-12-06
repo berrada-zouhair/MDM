@@ -1,0 +1,1 @@
+/* Script to create tables, sequences and indexes*/

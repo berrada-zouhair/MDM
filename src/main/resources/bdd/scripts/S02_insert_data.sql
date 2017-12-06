@@ -1,0 +1,1 @@
+insert into DEVICE (imei, ip, latitude, longitude, connected, INSTALLED_APPS) values ('imei2', 'IP2', '10.0', '10.0', TRUE, 'JSON');

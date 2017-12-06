@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>MDM</title>
+	<link rel="stylesheet" type="text/css" href="jquery.dataTables.min.css"  />
+ 
+<!-- 	<script type="text/javascript" src="jquery.datatables.min.js"></script> -->
+	<script type="text/javascript" src="jquery-1.12.4.js"></script>
+	<script type="text/javascript" src="jquery.dataTables.min.js"></script>
+	
+</head>
+<body>
+	<script >
+	var dataSet;
+// 	$(document).ready(function() {
+// 	    $.ajax({
+// 	        url: "http://localhost:8080/getAllDevices"
+// 	    }).then(function(data) {
+// 	       $('#example').DataTable( {
+// 		        data: data
+// 		        columns: [
+// 		            { title: "imei" },
+// 		            { title: "ip" },
+// 		            { title: "latitude" },
+// 		            { title: "longitude" },
+// 		            { title: "registerToken" },
+// 		            { title: "connected" }
+// 		        ]
+// 		    } );
+// 	    });
+// 	});
+$(document).ready(function() {
+    $.ajax({
+        url: "http://localhost:8080/getAllDevices"
+    }).then(function(data) {
+   		dataSet = data;
+   		$('#example').DataTable( {
+   	        data: dataSet,
+   	        columns: [
+   	        	{ title: "Imei" },
+   	        { title: "IP" },
+   	        { title: "Latitude" },
+   	        { title: "Longitude" },
+   	        { title: "Register Token" },
+   	        { title: "Connected" }
+   	        ]
+   	    } );
+    });
+    
+});
+
+
+	</script>
+	<table id="example" class="display" width="100%"></table>
+</body>
+</html>
